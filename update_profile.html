@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCU - Update Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Modern Premium Style */
+        :root {
+            --primary-blue: #007bff;
+            --secondary-blue: #0056b3;
+            --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+            --text-dark: #1e293b;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: var(--bg-gradient); 
+            margin: 0; 
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container { 
+            width: 100%;
+            max-width: 500px; 
+            background: #ffffff; 
+            padding: 40px; 
+            border-radius: 20px; 
+            box-shadow: 0 15px 35px rgba(0, 86, 179, 0.1); 
+            border-top: 6px solid var(--primary-blue);
+        }
+
+        h2 { 
+            color: var(--text-dark); 
+            text-align: center; 
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        /* Form Grouping */
+        .form-group { margin-bottom: 20px; position: relative; }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 15px;
+            top: 40px;
+            color: #94a3b8;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px 12px 42px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.1);
+        }
+
+        /* Read-only field style */
+        .form-group input:disabled {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        /* Save Button */
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+        }
+
+        /* Message Styling */
+        .message {
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+        .loading { display: block; background: #eef6ff; color: #007bff; }
+        .success { display: block; background: #dcfce7; color: #15803d; }
+        .error { display: block; background: #fee2e2; color: #b91c1c; }
+
+        /* Links */
+        .links {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .links a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .links a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Update Profile</h2>
+        <p class="subtitle">Keep your information up to date</p>
+        
+        <p id="loading-message" class="message loading"><i class="fas fa-spinner fa-spin"></i> Loading your profile...</p>
+
+        <form id="profileForm" style="display:none;">
+            <input type="hidden" name="action" value="update_profile">
+            
+            <div class="form-group">
+                <label for="student_id">Student ID (Cannot Change)</label>
+                <i class="fas fa-id-card"></i>
+                <input type="text" id="student_id" name="student_id" disabled required>
+            </div>
+            
+            <div class="form-group">
+                <label for="full_name">Full Name</label>
+                <i class="fas fa-user"></i>
+                <input type="text" id="full_name" name="full_name" required placeholder="Enter your full name">
+            </div>
+            
+            <div class="form-group">
+                <label for="department">Department</label>
+                <i class="fas fa-university"></i>
+                <select id="department" name="department" required>
+                    <option value="">-- Select Department --</option>
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Software Engineering">Software Engineering</option>
+                    <option value="Civil Engineering">Civil Engineering</option>
+                    <option value="Electrical Engineering">Electrical Engineering</option>
+                    <option value="N/A">N/A</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="email" name="email" required placeholder="example@wcu.edu.et">
+            </div>
+            
+            <button type="submit" class="btn-primary">Save Profile Changes</button>
+            
+            <p class="links">
+                <a href="change_password.html"><i class="fas fa-key"></i> Change Password</a> 
+                <span style="margin: 0 10px; color: #cbd5e1;">|</span>
+                <a href="student_dashboard.html">Return Dashboard</a>
+            </p>
+            <p id="message" class="message"></p>
+        </form>
+    </div>
+
+    <script>
+        // --- KEEPING YOUR ORIGINAL LOGIC UNTOUCHED ---
+        document.addEventListener('DOMContentLoaded', fetchProfileDetails);
+        const profileForm = document.getElementById('profileForm');
+        const messageElement = document.getElementById('message');
+        const loadingMessageElement = document.getElementById('loading-message');
+
+        function fetchProfileDetails() {
+            fetch('auth_handler.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'action=get_profile_details'
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingMessageElement.style.display = 'none';
+                if (data.success) {
+                    document.getElementById('student_id').value = data.profile.student_id;
+                    document.getElementById('full_name').value = data.profile.full_name;
+                    document.getElementById('department').value = data.profile.department;
+                    document.getElementById('email').value = data.profile.email;
+                    profileForm.style.display = 'block';
+                } else {
+                    messageElement.textContent = data.message || 'Failed to load profile.';
+                    messageElement.className = 'message error';
+                    messageElement.style.display = 'block';
+                    if(data.redirect) setTimeout(() => window.location.href = data.redirect, 2000);
+                }
+            })
+            .catch(error => {
+                loadingMessageElement.style.display = 'none';
+                messageElement.textContent = 'Network error while fetching profile.';
+                messageElement.className = 'message error';
+                messageElement.style.display = 'block';
+            });
+        }
+
+        profileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            formData.append('student_id', document.getElementById('student_id').value); 
+            
+            messageElement.textContent = 'Saving profile changes...';
+            messageElement.className = 'message loading';
+            messageElement.style.display = 'block';
+
+            fetch('auth_handler.php', { method: 'POST', body: formData })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    messageElement.textContent = data.message;
+                    messageElement.className = 'message success';
+                    sessionStorage.setItem('username', document.getElementById('full_name').value);
+                    setTimeout(() => window.location.href = 'student_dashboard.html', 2000);
+                } else {
+                    messageElement.textContent = data.message;
+                    messageElement.className = 'message error';
+                }
+            })
+            .catch(error => {
+                messageElement.textContent = 'Network error. Please try again.';
+                messageElement.className = 'message error';
+            });
+        });
+    </script>
+</body>
+</html>

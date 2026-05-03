@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assign Feedback (UC-15)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        :root { 
+            --primary-admin: #007bff; 
+            --action-color: #ff9800; /* Orange for assignment action */
+            --bg-light: #f4f7f9; 
+        }
+        body { font-family: Arial, sans-serif; background-color: var(--bg-light); line-height: 1.6; padding: 20px; }
+        .container { max-width: 700px; margin: 0 auto; background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        h1 { color: var(--primary-admin); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 30px; text-align: center; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: var(--primary-admin); text-decoration: none; font-weight: bold; }
+
+        .feedback-details { border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin-bottom: 20px; background-color: #f9f9f9; }
+        .feedback-details p { margin: 5px 0; font-size: 0.95em; }
+        .feedback-details strong { display: inline-block; width: 150px; color: #555; }
+        #feedback-summary { font-style: italic; color: #333; border-top: 1px dashed #ccc; padding-top: 10px; margin-top: 10px; }
+
+        .assignment-form { padding: 20px; border: 1px solid #007bff; border-radius: 5px; background-color: #e2f0ff; }
+        .assignment-form label { display: block; font-weight: bold; margin-bottom: 8px; color: var(--primary-admin); }
+        .assignment-form select { width: 100%; padding: 10px; border: 1px solid var(--primary-admin); border-radius: 4px; margin-bottom: 20px; font-size: 1em; }
+        .assignment-form button {
+            background-color: var(--action-color);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s;
+        }
+        .assignment-form button:hover { background-color: #e68a00; }
+
+        /* Notification/Message Area */
+        #message-area { margin-top: 20px; padding: 10px; border-radius: 4px; font-weight: bold; display: none; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p class="back-link"><a href="admin_dashboard.html">Back to Admin Dashboard</a></p>
+        
+        <h1>Assign Feedback (UC-15)</h1>
+
+        <div class="feedback-details">
+            <p><strong>Feedback ID:</strong> <span id="display-id">Loading...</span></p>
+            <p><strong>Submitted Date:</strong> <span id="display-date">N/A</span></p>
+            <p><strong>Department:</strong> <span id="display-dept">N/A</span></p>
+            <p><strong>Current Status:</strong> <span id="display-status">Unassigned</span></p>
+            <p id="feedback-summary">Summary: Loading feedback description...</p>
+        </div>
+
+        <form class="assignment-form" id="assignment-form">
+            <label for="staff-select">Select Responsible Staff/Department (Step 5):</label>
+            <select id="staff-select" required>
+                <option value="">-- Please Select --</option>
+                <option value="hod_cs">HOD - Computer Science</option>
+                <option value="hod_ee">HOD - Electrical Engineering</option>
+                <option value="cafeteria_head">Cafeteria Head</option>
+                <option value="instructor_samuel">Instructor Samuel L.</option>
+                <option value="instructor_tigist">Instructor Tigist K.</option>
+            </select>
+            
+            <button type="submit"><i class="fas fa-paper-plane"></i> Assign Feedback (Step 7)</button>
+        </form>
+        
+        <div id="message-area"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const assignmentForm = document.getElementById('assignment-form');
+            const staffSelect = document.getElementById('staff-select');
+            const messageArea = document.getElementById('message-area');
+            const urlParams = new URLSearchParams(window.location.search);
+            const feedbackId = urlParams.get('id');
+
+            // --- Initial Load and Data Simulation ---
+            if (feedbackId) {
+                document.getElementById('display-id').textContent = feedbackId;
+                // Simulate fetching feedback details based on ID
+                document.getElementById('display-date').textContent = '2025-10-25';
+                document.getElementById('display-dept').textContent = 'Computer Science';
+                document.getElementById('feedback-summary').textContent = `The lecturer is consistently late to CS401 (Feedback ID: ${feedbackId}).`;
+            } else {
+                 document.getElementById('display-id').textContent = 'Error: No ID';
+                 document.getElementById('feedback-summary').textContent = 'Error: No Feedback ID specified.';
+            }
+
+            // --- Assign Feedback Action (Steps 7, 8, 10, 12, 14) ---
+            assignmentForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const selectedStaff = staffSelect.value;
+                messageArea.style.display = 'none';
+
+                if (!selectedStaff) {
+                    // Alternative Flow: If no staff member is selected (Returns to Step 3/List)
+                    displayMessage("Please select a staff member to assign feedback.", 'error');
+                    return; 
+                }
+
+                // Simulate backend call (Steps 8 & 10)
+                displayMessage(`Assigning Feedback ID ${feedbackId} to ${selectedStaff}...`, 'success');
+                
+                // Simulate success delay
+                setTimeout(() => {
+                    // Step 12: Success message
+                    displayMessage(`Feedback ID ${feedbackId} assigned successfully! Notification sent.`, 'success');
+                    
+                    // Step 14: Redirect to List Page after confirmation
+                    setTimeout(() => {
+                        window.location.href = 'admin_feedback.html'; 
+                    }, 2000); // Wait 2 seconds for user to read success message
+                    
+                }, 1500);
+            });
+
+            function displayMessage(message, type) {
+                messageArea.textContent = message;
+                messageArea.className = ''; 
+                messageArea.classList.add(type);
+                messageArea.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

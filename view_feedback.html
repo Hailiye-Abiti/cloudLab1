@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Feedback Details</title>
+    <link rel="stylesheet" href="style.css"> 
+    <style>
+        .feedback-summary {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f7f7f7;
+            text-align: left;
+        }
+        .feedback-summary h4 {
+            margin-top: 0;
+            color: #004d99;
+        }
+        .feedback-item {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            text-align: left;
+            background-color: #fff;
+        }
+        .rating-average {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #28a745; /* Green color for positive focus */
+        }
+        .comment-section {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 5px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 id="page_title">Feedback Submissions</h2>
+        <div id="summary_display" class="feedback-summary">
+            </div>
+        
+        <h3>Individual Submissions (Total: <span id="submission_count">0</span>)</h3>
+        <div id="feedback_list">
+            </div>
+
+        <p id="message" class="message"></p>
+        <p class="links"><a href="hod_dashboard.html">Back to Dashboard</a></p>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', fetchFeedback);
+        
+        // Rating questions list for clear display
+        const RATING_QUESTIONS = [
+            '1. Presentation Clarity',
+            '2. Subject Mastery',
+            '3. Grading Fairness'
+        ];
+
+        function fetchFeedback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const categoryId = urlParams.get('category_id');
+            const categoryName = urlParams.get('category_name');
+            const messageElement = document.getElementById('message');
+            
+            if (!categoryId || !categoryName) {
+                messageElement.textContent = 'Error: No category selected for viewing. Redirecting...';
+                messageElement.className = 'message error';
+                setTimeout(() => window.location.href = 'hod_dashboard.html', 3000);
+                return;
+            }
+
+            document.getElementById('page_title').textContent = `Feedback: ${categoryName}`;
+            messageElement.textContent = 'Loading submissions...';
+            messageElement.className = 'message loading';
+
+            // Prepare data for the UC-06 action in auth_handler.php
+            const formData = new FormData();
+            formData.append('action', 'get_detailed_feedback');
+            formData.append('category_id', categoryId);
+
+            fetch('auth_handler.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                messageElement.textContent = '';
+                messageElement.className = 'message';
+                
+                if (data.success) {
+                    displayFeedback(data);
+                } else {
+                    messageElement.textContent = data.message || 'Failed to load feedback data. Check server logs.';
+                    messageElement.className = 'message error';
+                    // If access denied (not HOD/Admin) or session expired
+                    if(data.redirect) {
+                        setTimeout(() => window.location.href = data.redirect, 2000);
+                    }
+                }
+            })
+            .catch(error => {
+                messageElement.textContent = 'Network error while fetching feedback. Check console.';
+                messageElement.className = 'message error';
+                console.error('Error:', error);
+            });
+        }
+        
+        function displayFeedback(data) {
+            const summaryDisplay = document.getElementById('summary_display');
+            const feedbackList = document.getElementById('feedback_list');
+            
+            if (data.submissions.length === 0) {
+                summaryDisplay.innerHTML = '<h4>No Submissions Found</h4><p>There is no feedback available for this category yet.</p>';
+                document.getElementById('submission_count').textContent = '0';
+                return;
+            }
+            
+            // --- 1. Display Summary (Averages) ---
+            let summaryHTML = '<h4>Overall Average Ratings (5-point scale)</h4>';
+            summaryHTML += `
+                <p><strong>Total Submissions:</strong> ${data.submissions.length}</p>
+                <p><strong>Combined Average Score:</strong> <span class="rating-average">${data.average_ratings.avg_q_overall} / 5</span></p>
+            `;
+            
+            summaryHTML += '<ul>';
+            for(let i = 0; i < RATING_QUESTIONS.length; i++) {
+                const qKey = `avg_q${i + 1}`;
+                summaryHTML += `<li><strong>${RATING_QUESTIONS[i]}:</strong> ${data.average_ratings[qKey]} / 5</li>`;
+            }
+            summaryHTML += '</ul>';
+            summaryDisplay.innerHTML = summaryHTML;
+            document.getElementById('submission_count').textContent = data.submissions.length;
+            
+            
+            // --- 2. Display Detailed Submissions ---
+            feedbackList.innerHTML = '';
+            
+            data.submissions.forEach((sub, index) => {
+                let itemHTML = `
+                    <div class="feedback-item">
+                        <strong>Target:</strong> ${sub.target_name} (Submission #${index + 1})<br>
+                        <strong>Ratings:</strong> 
+                        <ul>
+                            <li>Q1: ${sub.rating_q1}</li>
+                            <li>Q2: ${sub.rating_q2}</li>
+                            <li>Q3: ${sub.rating_q3}</li>
+                        </ul>
+                `;
+                if (sub.overall_comment) {
+                    itemHTML += `<div class="comment-section"><strong>Comment:</strong> ${sub.overall_comment}</div>`;
+                }
+                itemHTML += `<small>Submitted on: ${sub.submission_date}</small></div>`;
+                feedbackList.innerHTML += itemHTML;
+            });
+        }
+    </script>
+</body>
+</html>

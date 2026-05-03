@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Feedback History - WCU</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+        body {
+            background-color: #f0f7ff; /* በጣም ቀላ ያለ ሰማያዊ */
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: #004d99; /* Medium Blue */
+            color: white;
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar a { color: white; text-decoration: none; font-weight: 600; }
+
+        .main-content {
+            padding: 40px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header h2 { color: #003366; margin-bottom: 20px; font-size: 28px; }
+
+        /* History Table Container */
+        .history-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 77, 153, 0.1);
+            overflow: hidden;
+            border-top: 5px solid #007bff; /* Light Blue Border */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #e6f2ff; /* Light Blue Header */
+        }
+
+        th, td {
+            padding: 18px 20px;
+            text-align: left;
+            border-bottom: 1px solid #eef2f6;
+        }
+
+        th { color: #004d99; font-weight: 700; }
+
+        /* Star Rating Styling - Updated */
+        .stars { 
+            color: #ffb400; /* ደማቅ ወርቃማ ቀለም በሰማያዊ ላይ በደንብ እንዲታይ */
+            font-size: 16px; 
+            margin-right: 2px;
+        }
+        .empty-star { 
+            color: #d1d9e6; /* ቀላ ያለ ግራጫ */
+        }
+
+        .badge {
+            background: #d0e7ff;
+            color: #0056b3;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        tr:hover { background-color: #f9fcff; }
+
+        .no-data { padding: 50px; text-align: center; color: #888; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div style="font-size: 18px; letter-spacing: 1px;">WACHEMO UNIVERSITY</div>
+        <a href="student_dashboard.html"><i class="fas fa-arrow-left"></i> Dashboard</a>
+    </nav>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h2><i class="fas fa-clipboard-list" style="color: #007bff;"></i> My Feedback History</h2>
+        </div>
+
+        <div class="history-container">
+            <table id="historyTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Target Name</th>
+                        <th>Comment</th>
+                        <th>Rating</th>
+                    </tr>
+                </thead>
+                <tbody id="history_list">
+                    </tbody>
+            </table>
+            <div id="no-data-msg" class="no-data" style="display:none;">
+                <p>No feedback history found.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', fetchHistory);
+
+        function fetchHistory() {
+            const listElement = document.getElementById('history_list');
+            
+            fetch('auth_handler.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'action=get_student_history'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.history.length > 0) {
+                    listElement.innerHTML = '';
+                    data.history.forEach(item => {
+                        const row = document.createElement('tr');
+                        
+                        // Rating Star Generator
+                        let starsHtml = '';
+                        const rating = Math.round(item.overall_rating);
+                        for(let i=1; i<=5; i++) {
+                            if(i <= rating) {
+                                starsHtml += '<i class="fas fa-star stars"></i>';
+                            } else {
+                                starsHtml += '<i class="fas fa-star empty-star"></i>';
+                            }
+                        }
+
+                        row.innerHTML = `
+                            <td style="color: #666;">${new Date(item.submission_date).toLocaleDateString()}</td>
+                            <td><span class="badge">${item.category_name}</span></td>
+                            <td><b style="color: #333;">${item.target_name}</b></td>
+                            <td style="color: #555; font-size: 13px;">${item.overall_comment || '-'}</td>
+                            <td>${starsHtml}</td>
+                        `;
+                        listElement.appendChild(row);
+                    });
+                } else {
+                    document.getElementById('no-data-msg').style.display = 'block';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

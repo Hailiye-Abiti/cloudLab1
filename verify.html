@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Verification</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Verify Your Account</h2>
+        <p>Please enter the verification code (OTP) sent during registration.</p>
+        <form id="verificationForm">
+            <input type="hidden" name="action" value="verify_otp">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required> 
+            </div>
+            <div class="form-group">
+                <label for="otp">Verification Code (OTP):</label>
+                <input type="text" id="otp" name="otp" required>
+            </div>
+            <button type="submit" class="btn-primary">Verify Account</button>
+            <p class="links"><a href="login.html">Back to Login</a></p>
+            <p id="message" class="message"></p>
+        </form>
+    </div>
+    <script>
+        // አሁንም ቢሆን email ከ session storage ላይ የመጫን ሙከራ ያደርጋል
+        const verifyEmail = sessionStorage.getItem('verify_email');
+        if (verifyEmail) {
+            document.getElementById('email').value = verifyEmail;
+        }
+
+        document.getElementById('verificationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const messageElement = document.getElementById('message');
+            messageElement.textContent = 'Verifying...';
+            messageElement.className = 'message loading';
+
+            fetch('auth_handler.php', { method: 'POST', body: formData })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    messageElement.textContent = data.message;
+                    messageElement.className = 'message success';
+                    sessionStorage.removeItem('verify_email');
+                    if (data.redirect) {
+                        setTimeout(() => window.location.href = data.redirect, 2000);
+                    }
+                } else {
+                    messageElement.textContent = data.message;
+                    messageElement.className = 'message error';
+                }
+            })
+            .catch(error => {
+                messageElement.textContent = 'Network error. Please try again.';
+                messageElement.className = 'message error';
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Categories - WCU Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* Modern Light Blue UI Theme */
+        :root { 
+            --primary-blue: #007bff; 
+            --dark-navy: #003366;
+            --bg-light: #f0f7ff; 
+            --danger: #dc3545;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-light); 
+            margin: 0; 
+            padding: 20px; 
+            color: #333;
+        }
+
+        .container { 
+            max-width: 900px; 
+            margin: 30px auto; 
+            background-color: #fff; 
+            padding: 40px; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 25px rgba(0, 123, 255, 0.1); 
+            border-top: 8px solid var(--primary-blue);
+        }
+
+        .back-link { 
+            display: inline-block; 
+            margin-bottom: 25px; 
+            color: var(--primary-blue); 
+            text-decoration: none; 
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .back-link:hover { transform: translateX(-5px); color: var(--dark-navy); }
+
+        h1 { color: var(--dark-navy); margin-bottom: 30px; text-align: center; font-size: 26px; }
+        h2 { color: var(--dark-navy); font-size: 18px; margin-top: 30px; margin-bottom: 15px; }
+
+        /* Form Styling */
+        #add-category-form {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 40px;
+            padding: 20px;
+            background-color: #f8fbff;
+            border: 1px solid #cce5ff;
+            border-radius: 10px;
+        }
+
+        #add-category-form input[type="text"] {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        #add-category-form button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #add-category-form button:hover { background-color: #218838; transform: scale(1.02); }
+
+        /* Modern Table Styling */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        
+        th { 
+            background-color: #f0f7ff; 
+            color: var(--dark-navy); 
+            padding: 15px; 
+            text-align: left; 
+            border-bottom: 2px solid #e1e5ee;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        td { padding: 15px; border-bottom: 1px solid #f1f4f8; font-size: 14px; }
+        
+        tr:hover { background-color: #fcfdfe; }
+
+        .action-btns button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: 0.2s;
+            margin-right: 5px;
+        }
+
+        .edit-btn { background-color: #ffc107; color: #333; }
+        .edit-btn:hover { background-color: #e0a800; }
+
+        .delete-btn { background-color: var(--danger); color: white; }
+        .delete-btn:hover { background-color: #c82333; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <a href="admin_dashboard.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Admin Dashboard</a>
+        <h1>Manage Feedback Categories</h1>
+
+        <h2><i class="fas fa-plus-circle"></i> Add New Category</h2>
+        <form id="add-category-form">
+            <input type="text" id="category-name" placeholder="Enter new category name (e.g., Clarity of Explanations)" required>
+            <button type="submit"><i class="fas fa-plus"></i> Add Category</button>
+        </form>
+
+        <h2><i class="fas fa-list"></i> Existing Categories</h2>
+        <table id="category-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Category Name</th>
+                    <th>Description</th>
+                    <th style="text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-id="C1">
+                    <td style="font-weight: bold; color: #888;">C1</td>
+                    <td style="font-weight: 600; color: var(--dark-navy);">Teaching Method</td>
+                    <td>Effectiveness of instruction and delivery.</td>
+                    <td class="action-btns" style="text-align: center;">
+                        <button class="edit-btn" onclick="editCategory('C1')"><i class="fas fa-edit"></i> Edit</button>
+                        <button class="delete-btn" onclick="deleteCategory('C1')"><i class="fas fa-trash"></i> Delete</button>
+                    </td>
+                </tr>
+                <tr data-id="C2">
+                    <td style="font-weight: bold; color: #888;">C2</td>
+                    <td style="font-weight: 600; color: var(--dark-navy);">Punctuality</td>
+                    <td>Faculty adherence to class start/end times.</td>
+                    <td class="action-btns" style="text-align: center;">
+                        <button class="edit-btn" onclick="editCategory('C2')"><i class="fas fa-edit"></i> Edit</button>
+                        <button class="delete-btn" onclick="deleteCategory('C2')"><i class="fas fa-trash"></i> Delete</button>
+                    </td>
+                </tr>
+                <tr data-id="C3">
+                    <td style="font-weight: bold; color: #888;">C3</td>
+                    <td style="font-weight: 600; color: var(--dark-navy);">Fairness in Grading</td>
+                    <td>Perception of objectivity and fairness in assessments.</td>
+                    <td class="action-btns" style="text-align: center;">
+                        <button class="edit-btn" onclick="editCategory('C3')"><i class="fas fa-edit"></i> Edit</button>
+                        <button class="delete-btn" onclick="deleteCategory('C3')"><i class="fas fa-trash"></i> Delete</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // --- YOUR ORIGINAL LOGIC UNTOUCHED ---
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('add-category-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const categoryName = document.getElementById('category-name').value;
+                if (categoryName) {
+                    alert(`Simulating ADD Category: "${categoryName}"\n\n*This data would be sent to the backend for insertion.*`);
+                    document.getElementById('category-name').value = ''; 
+                }
+            });
+
+            window.editCategory = function(id) {
+                alert(`Simulating EDIT for Category ID: ${id}\n\n*This would open a modal/form to update the name/description.*`);
+            }
+
+            window.deleteCategory = function(id) {
+                if (confirm(`Are you sure you want to DELETE Category ID: ${id}?`)) {
+                    alert(`Simulating DELETE for Category ID: ${id}\n\n*This request would be sent to the backend.*`);
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

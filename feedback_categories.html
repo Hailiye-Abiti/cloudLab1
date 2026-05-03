@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCU - Feedback Categories</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background-color: #f4f7f6;
+            min-height: 100vh;
+        }
+
+        /* Navbar Header */
+        .header {
+            background: #003366;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        h2 { color: #333; margin-bottom: 10px; font-size: 26px; }
+        p.subtitle { color: #666; margin-bottom: 30px; }
+
+        /* Category Grid */
+        #category_list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        /* Dynamic Card Styling */
+        .category-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #003366;
+            font-weight: 700;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .category-card i {
+            font-size: 35px;
+            color: #ff9800; /* Accent color */
+        }
+
+        .category-card:hover {
+            transform: translateY(-8px);
+            background: #003366;
+            color: white;
+            box-shadow: 0 10px 20px rgba(0,51,102,0.15);
+        }
+
+        .category-card:hover i {
+            color: white;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 40px;
+            color: #003366;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover { color: brown; }
+
+        .message { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; }
+        .error { display: block; background: #f8d7da; color: #721c24; }
+        .loading { display: block; color: #666; font-style: italic; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Wachemo University</h1>
+    </div>
+
+    <div class="container">
+        <h2>Select Feedback Category</h2>
+        <p class="subtitle">Please choose the area you want to provide feedback for.</p>
+
+        <div id="category_list">
+            </div>
+        
+        <p id="message" class="message loading">Loading categories...</p>
+
+        <a href="student_dashboard.html" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', fetchCategories);
+
+        function fetchCategories() {
+            const listElement = document.getElementById('category_list');
+            const messageElement = document.getElementById('message');
+
+            fetch('auth_handler.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'action=get_feedback_categories'
+            })
+            .then(response => response.json())
+            .then(data => {
+                messageElement.style.display = 'none';
+                if (data.success && data.categories.length > 0) {
+                    listElement.innerHTML = ''; 
+                    data.categories.forEach(category => {
+                        const card = document.createElement('a');
+                        card.className = 'category-card';
+                        card.href = `feedback_form.html?category_id=${category.category_id}&category_name=${encodeURIComponent(category.category_name)}`;
+                        
+                        // Icon logic based on category name (Optional)
+                        let iconClass = 'fa-folder-open';
+                        if(category.category_name.toLowerCase().includes('teacher')) iconClass = 'fa-user-tie';
+                        if(category.category_name.toLowerCase().includes('course')) iconClass = 'fa-book';
+                        if(category.category_name.toLowerCase().includes('facility')) iconClass = 'fa-building';
+
+                        card.innerHTML = `<i class="fas ${iconClass}"></i> ${category.category_name}`;
+                        listElement.appendChild(card);
+                    });
+                } else {
+                    messageElement.textContent = data.message || 'No categories found.';
+                    messageElement.className = 'message error';
+                }
+            })
+            .catch(error => {
+                messageElement.textContent = 'Error loading categories.';
+                messageElement.className = 'message error';
+            });
+        }
+    </script>
+</body>
+</html>

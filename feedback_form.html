@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCU - Submit Feedback</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background-color: #f0f2f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 20px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .header-section {
+            border-bottom: 2px solid #eee;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            text-align: center;
+        }
+
+        h2 { color: #003366; font-size: 24px; margin-bottom: 10px; }
+        .category-badge {
+            background: #eef2f7;
+            color: #003366;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* Question Styling */
+        .rating-group {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .rating-group label {
+            display: block;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+        }
+
+        .rating-options {
+            display: flex;
+            justify-content: space-between;
+            max-width: 400px;
+        }
+
+        .rating-options label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            font-weight: normal;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .rating-options input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            accent-color: #003366;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 5px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            height: 120px;
+            resize: vertical;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .btn-submit {
+            background: #003366;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn-submit:hover { background: #00509e; }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+        }
+       .back-link:hover  { color: lightblue; }
+
+        .message { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; text-align: center; }
+        .success { display: block; background: #d4edda; color: #155724; }
+        .error { display: block; background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-section">
+            <h2 id="form_title">Submit Feedback</h2>
+            <span class="category-badge" id="category_name_display">Loading...</span>
+        </div>
+
+        <form id="feedbackForm">
+            <input type="hidden" name="action" value="submit_feedback">
+            <input type="hidden" name="category_id" id="category_id">
+
+            <div class="rating-group" style="background: #fff; border: 1px solid #003366;">
+                <label>Target Name (e.g., Teacher Name or Course Title)</label>
+                <input type="text" name="target_name" class="input-field" placeholder="Who/What is this feedback for?" required>
+            </div>
+
+            <div class="rating-group">
+                <label>1. How would you rate the clarity of the presentation?</label>
+                <div class="rating-options">
+                    <label><input type="radio" name="rating_q1" value="1" required> 1 (Poor)</label>
+                    <label><input type="radio" name="rating_q1" value="2"> 2</label>
+                    <label><input type="radio" name="rating_q1" value="3"> 3</label>
+                    <label><input type="radio" name="rating_q1" value="4"> 4</label>
+                    <label><input type="radio" name="rating_q1" value="5"> 5 (Excellent)</label>
+                </div>
+            </div>
+
+            <div class="rating-group">
+                <label>2. How helpful was the material provided?</label>
+                <div class="rating-options">
+                    <label><input type="radio" name="rating_q2" value="1" required> 1</label>
+                    <label><input type="radio" name="rating_q2" value="2"> 2</label>
+                    <label><input type="radio" name="rating_q2" value="3"> 3</label>
+                    <label><input type="radio" name="rating_q2" value="4"> 4</label>
+                    <label><input type="radio" name="rating_q2" value="5"> 5</label>
+                </div>
+            </div>
+
+            <div class="rating-group">
+                <label>3. Overall satisfaction with the service/course?</label>
+                <div class="rating-options">
+                    <label><input type="radio" name="rating_q3" value="1" required> 1</label>
+                    <label><input type="radio" name="rating_q3" value="2"> 2</label>
+                    <label><input type="radio" name="rating_q3" value="3"> 3</label>
+                    <label><input type="radio" name="rating_q3" value="4"> 4</label>
+                    <label><input type="radio" name="rating_q3" value="5"> 5</label>
+                </div>
+            </div>
+
+            <div class="rating-group">
+                <label>Additional Comments (Optional)</label>
+                <textarea name="overall_comment" placeholder="Write your honest feedback here..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit">SUBMIT FEEDBACK</button>
+            
+            <a href="feedback_categories.html" class="back-link"><i class="fas fa-arrow-left"></i> Change Category</a>
+            <p id="message" class="message"></p>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const categoryId = urlParams.get('category_id');
+            const categoryName = urlParams.get('category_name');
+
+            if (categoryId && categoryName) {
+                document.getElementById('category_id').value = categoryId;
+                document.getElementById('category_name_display').textContent = "Category: " + categoryName;
+            } else {
+                window.location.href = 'feedback_categories.html';
+            }
+        });
+
+        document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const messageElement = document.getElementById('message');
+
+            messageElement.textContent = 'Submitting your feedback...';
+            messageElement.className = 'message';
+            messageElement.style.display = 'block';
+
+            fetch('auth_handler.php', { method: 'POST', body: formData })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    messageElement.textContent = data.message;
+                    messageElement.className = 'message success';
+                    this.reset();
+                    setTimeout(() => window.location.href = 'student_dashboard.html', 2500);
+                } else {
+                    messageElement.textContent = data.message;
+                    messageElement.className = 'message error';
+                }
+            })
+            .catch(error => {
+                messageElement.textContent = 'Error submitting. Please try again.';
+                messageElement.className = 'message error';
+            });
+        });
+    </script>
+</body>
+</html>

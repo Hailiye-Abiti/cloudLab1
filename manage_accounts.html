@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage User Accounts - WCU</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Modern Light Blue UI */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f0f7ff; 
+            margin: 0; 
+            color: #333;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 123, 255, 0.1);
+            border-top: 8px solid #007bff;
+        }
+
+        h2 { 
+            color: #003366; 
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Top Controls */
+        .account-controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .btn-add {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-add:hover { background-color: #0056b3; transform: translateY(-2px); }
+
+        /* Modern Table Styling */
+        .table-container { overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: white;
+        }
+
+        th {
+            background-color: #f8fbff;
+            color: #0056b3;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            padding: 15px;
+            border-bottom: 2px solid #e1e5ee;
+            text-align: left;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f1f4f8;
+            font-size: 14px;
+        }
+
+        tr:hover { background-color: #fcfdfe; }
+
+        /* Status Badges */
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .verified { background: #d4edda; color: #155724; }
+        .not-verified { background: #f8d7da; color: #721c24; }
+
+        /* Action Buttons */
+        .action-btns button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.2s;
+            margin-right: 5px;
+        }
+
+        .edit-btn { background-color: #ffc107; color: #333; }
+        .edit-btn:hover { background-color: #e0a800; }
+
+        .delete-btn { background-color: #dc3545; color: white; }
+        .delete-btn:hover { background-color: #c82333; }
+
+        /* Messages */
+        .message { padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
+        .loading { color: #007bff; background: #eef6ff; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 25px;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2><i class="fas fa-users-cog"></i> Manage User Accounts</h2>
+        
+        <p id="message" class="message loading">Loading users...</p>
+        
+        <div class="account-controls">
+            <button class="btn-add" onclick="window.location.href='user_form.html?action=add'">
+                <i class="fas fa-plus"></i> Add New User
+            </button>
+        </div>
+
+        <div class="table-container">
+            <table id="userTable" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Full Name</th>
+                        <th>Student ID</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Role</th>
+                        <th>Verified</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="userList">
+                    </tbody>
+            </table>
+        </div>
+        
+        <a href="admin_dashboard.html" class="back-link">← Back to Dashboard</a>
+    </div>
+    
+    <script>
+        // --- YOUR ORIGINAL LOGIC UNTOUCHED ---
+        document.addEventListener('DOMContentLoaded', fetchUsers);
+        const userList = document.getElementById('userList');
+        const messageElement = document.getElementById('message');
+        const userTable = document.getElementById('userTable');
+
+        function fetchUsers() {
+            messageElement.textContent = 'Loading users...';
+            messageElement.className = 'message loading';
+            userTable.style.display = 'none';
+            userList.innerHTML = '';
+
+            fetch('auth_handler.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'action=get_all_users'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.users.length > 0) {
+                    messageElement.style.display = 'none';
+                    userTable.style.display = 'table';
+                    renderUsers(data.users);
+                } else if (data.success && data.users.length === 0) {
+                    messageElement.textContent = 'No users found in the system.';
+                    messageElement.className = 'message error';
+                } else {
+                    messageElement.textContent = data.message || 'Failed to load user list.';
+                    messageElement.className = 'message error';
+                    if(data.redirect) {
+                        setTimeout(() => window.location.href = data.redirect, 2000);
+                    }
+                }
+            })
+            .catch(error => {
+                messageElement.textContent = 'Network error while fetching users.';
+                messageElement.className = 'message error';
+            });
+        }
+        
+        function renderUsers(users) {
+            users.forEach(user => {
+                const row = userList.insertRow();
+                // We add a class to the Verified column for better design
+                const verifyStatus = user.is_verified == 1 
+                    ? '<span class="badge verified">Yes</span>' 
+                    : '<span class="badge not-verified">No</span>';
+
+                row.innerHTML = `
+                    <td style="font-weight:bold; color:#888;">#${user.user_id}</td>
+                    <td style="font-weight:600;">${user.full_name}</td>
+                    <td>${user.student_id || '-'}</td>
+                    <td>${user.email}</td>
+                    <td>${user.department || '-'}</td>
+                    <td><span style="color:#0056b3;">${user.user_role}</span></td>
+                    <td>${verifyStatus}</td>
+                    <td class="action-btns">
+                        <button class="edit-btn" onclick="window.location.href='user_form.html?action=edit&user_id=${user.user_id}'"><i class="fas fa-edit"></i> Edit</button>
+                        <button class="delete-btn" onclick="deleteUser(${user.user_id}, '${user.full_name}')"><i class="fas fa-trash"></i> Delete</button>
+                    </td>
+                `;
+            });
+        }
+        
+        function deleteUser(userId, fullName) {
+            if (confirm(`Are you sure you want to delete the account for ${fullName}? This action is irreversible.`)) {
+                messageElement.textContent = `Deleting ${fullName}...`;
+                messageElement.className = 'message loading';
+                messageElement.style.display = 'block';
+
+                fetch('auth_handler.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: `action=delete_user&user_id=${userId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        messageElement.textContent = data.message;
+                        messageElement.className = 'message success';
+                        fetchUsers(); 
+                    } else {
+                        messageElement.textContent = data.message;
+                        messageElement.className = 'message error';
+                    }
+                })
+                .catch(error => {
+                    messageElement.textContent = 'Network error during deletion.';
+                    messageElement.className = 'message error';
+                });
+            }
+        }
+    </script>
+</body>
+</html>

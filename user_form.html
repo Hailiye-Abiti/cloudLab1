@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="formTitle">Add New User</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2 id="pageHeading">Add New User Account</h2>
+        <form id="userForm">
+            <input type="hidden" name="action" id="formAction" value="add_user">
+            <input type="hidden" name="user_id" id="userId">
+            
+            <div class="form-group">
+                <label for="student_id">Student ID (if Student):</label>
+                <input type="text" id="student_id" name="student_id">
+            </div>
+            
+            <div class="form-group">
+                <label for="full_name">Full Name:</label>
+                <input type="text" id="full_name" name="full_name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="department">Department:</label>
+                <select id="department" name="department" required>
+                    <option value="">-- Select Department --</option>
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Software Engineering">Software Engineering</option>
+                    <option value="Civil Engineering">Civil Engineering</option>
+                    <option value="Electrical Engineering">Electrical Engineering</option>
+                    <option value="N/A">N/A (for Admins)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="user_role">User Role:</label>
+                <select id="user_role" name="user_role" required>
+                    <option value="">-- Select Role --</option>
+                    <option value="Student">Student</option>
+                    <option value="Instructor">Instructor</option>
+                    <option value="HOD">Head of Department (HOD)</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="passwordGroup">
+                <label for="password">Password (Required for New User):</label>
+                <input type="password" id="password" name="password">
+            </div>
+            
+            <button type="submit" class="btn-primary" id="submitButton">Add User</button>
+            <p class="links"><a href="manage_accounts.html">Back to Account List</a></p>
+            <p id="message" class="message"></p>
+        </form>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', initializeForm);
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const formActionType = urlParams.get('action');
+        const userId = urlParams.get('user_id');
+        const messageElement = document.getElementById('message');
+        const passwordField = document.getElementById('password');
+
+        function initializeForm() {
+            if (formActionType === 'edit' && userId) {
+                // Configure form for editing
+                document.getElementById('formTitle').textContent = 'Edit User Account';
+                document.getElementById('pageHeading').textContent = 'Edit User Account';
+                document.getElementById('formAction').value = 'update_user';
+                document.getElementById('userId').value = userId;
+                document.getElementById('submitButton').textContent = 'Save Changes';
+                document.getElementById('passwordGroup').style.display = 'none'; // Hide password field
+                
+                // Fetch existing user data
+                fetchUserData(userId);
+            } else {
+                // Configure form for adding
+                document.getElementById('password').setAttribute('required', 'required');
+            }
+        }
+        
+        function fetchUserData(id) {
+            messageElement.textContent = 'Loading user data...';
+            messageElement.className = 'message loading';
+
+            fetch('auth_handler.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: `action=get_single_user&user_id=${id}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.user) {
+                    // Fill the form with current data
+                    document.getElementById('student_id').value = data.user.student_id || '';
+                    document.getElementById('full_name').value = data.user.full_name;
+                    document.getElementById('email').value = data.user.email;
+                    document.getElementById('department').value = data.user.department;
+                    document.getElementById('user_role').value = data.user.user_role;
+                    
+                    messageElement.style.display = 'none';
+                } else {
+                    messageElement.textContent = data.message || 'Failed to load user data.';
+                    messageElement.className = 'message error';
+                }
+            })
+            .catch(error => {
+                messageElement.textContent = 'Network error while fetching user data.';
+                messageElement.className = 'message error';
+                console.error('Error:', error);
+            });
+        }
+
+        // Handle form submission (Add or Edit)
+        document.getElementById('userForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            // If editing, don't send empty password field
+            if (formActionType === 'edit' && passwordField.value === '') {
+                formData.delete('password');
+            } else if (passwordField.value.length > 0 && passwordField.value.length < 8) {
+                 messageElement.textContent = 'Password must be at least 8 characters long.';
+                 messageElement.className = 'message error';
+                 return;
+            }
+
+            messageElement.textContent = 'Saving user...';
+            messageElement.className = 'message loading';
+
+            fetch('auth_handler.php', { method: 'POST', body: formData })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    messageElement.textContent = data.message;
+                    messageElement.className = 'message success';
+                    // Redirect back to the list after success
+                    setTimeout(() => window.location.href = 'manage_accounts.html', 1500); 
+                } else {
+                    messageElement.textContent = data.message;
+                    messageElement.className = 'message error';
+                }
+            })
+            .catch(error => {
+                messageElement.textContent = 'Network error. Please try again.';
+                messageElement.className = 'message error';
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>

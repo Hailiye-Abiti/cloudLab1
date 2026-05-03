@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Analysis</title>
+    <link rel="stylesheet" href="style.css"> 
+    <style>
+        .filter-section {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .filter-section .form-group {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .filter-section label {
+            width: 120px;
+            font-weight: bold;
+            text-align: right;
+            padding-right: 15px;
+        }
+        .filter-section input, .filter-section select {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .filter-buttons {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .feedback-summary {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #004d99;
+            border-radius: 4px;
+            background-color: #e6f7ff;
+            text-align: left;
+        }
+        .feedback-summary h4 {
+            margin-top: 0;
+            color: #004d99;
+        }
+        .feedback-item {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            text-align: left;
+            background-color: #fff;
+        }
+        .rating-average {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .comment-section {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            border-left: 3px solid #004d99;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 id="categoryTitle">Feedback Analysis</h2>
+        
+        <div class="filter-section">
+            <h4>Filter Submissions (UC-12)</h4>
+            <form id="filterForm">
+                <input type="hidden" name="action" value="get_filtered_feedback">
+                <input type="hidden" name="category_id" id="categoryId">
+                
+                <div class="form-group">
+                    <label for="department">Department:</label>
+                    <select id="department" name="department">
+                        <option value="">All Departments</option>
+                        <option value="Computer Science">Computer Science</option>
+                        <option value="Software Engineering">Software Engineering</option>
+                        <option value="Civil Engineering">Civil Engineering</option>
+                        <option value="Electrical Engineering">Electrical Engineering</option>
+                        <option value="N/A">N/A (Admin/HOD)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="target_name">Target Name:</label>
+                    <input type="text" id="target_name" name="target_name" placeholder="E.g., Instructor Name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="start_date">Start Date:</label>
+                    <input type="date" id="start_date" name="start_date">
+                </div>
+                
+                <div class="form-group">
+                    <label for="end_date">End Date:</label>
+                    <input type="date" id="end_date" name="end_date">
+                </div>
+                
+                <div class="filter-buttons">
+                    <button type="submit" class="btn-primary">Apply Filters</button>
+                    <button type="button" class="btn-secondary" onclick="document.getElementById('filterForm').reset(); fetchFeedback();">Clear Filters</button>
+                </div>
+            </form>
+        </div>
+        
+        <p id="message" class="message loading">Loading data...</p>
+
+        <div id="summaryArea" class="feedback-summary" style="display: none;">
+            <h4>Analysis Summary</h4>
+            <p>Total Submissions: <span id="submission_count" class="rating-average">0</span></p>
+            <ul id="averageRatingsList"></ul>
+        </div>
+
+        <h3>Detailed Submissions (<span id="submission_target_name"></span>)</h3>
+        <div id="feedbackList">
+            </div>
+
+        <p class="links"><a href="hod_dashboard.html">Back to Dashboard</a></p>
+    </div>
+    
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const categoryId = urlParams.get('category_id');
+        const categoryName = urlParams.get('category_name');
+        
+        // Note: Questions should be consistent with the database/form logic (UC-05)
+        const RATING_QUESTIONS = [
+            "Content and Subject Mastery",
+            "Teaching Method and Delivery",
+            "Fairness and Availability"
+        ];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!categoryId || !categoryName) {
+                document.getElementById('message').textContent = 'Error: Category not selected.';
+                document.getElementById('message').className = 'message error';
+                return;
+            }
+            document.getElementById('categoryTitle').textContent = `${categoryName} Analysis`;
+            document.getElementById('categoryId').value = categoryId;
+            fetchFeedback(); // Load initial data
+            
+            document.getElementById('filterForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                fetchFeedback(); // Reload data with filters
+            });
+        });
+
+        function fetchFeedback() {
+            const messageElement = document.getElementById('message');
+            messageElement.textContent = 'Fetching and calculating data...';
+            messageElement.className = 'message loading';
+            messageElement.style.display = 'block';
+            document.getElementById('summaryArea').style.display = 'none';
+            document.getElementById('feedbackList').innerHTML = '';
+
+            const formData = new FormData(document.getElementById('filterForm'));
+            
+            fetch('auth_handler.php', { method: 'POST', body: formData })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    messageElement.style.display = 'none';
+                    renderFeedback(data);
+                } else {
+                    messageElement.textContent = data.message || 'Failed to fetch feedback data.';
+                    messageElement.className = 'message error';
+                    if(data.redirect) {
+                        setTimeout(() => window.location.href = data.redirect, 2000);
+                    }
+                }
+            })
+            .catch(error => {
+                messageElement.textContent = 'Network error. Could not connect to server.';
+                messageElement.className = 'message error';
+                console.error('Error:', error);
+            });
+        }
+        
+        function renderFeedback(data) {
+            const summaryDisplay = document.getElementById('averageRatingsList');
+            const feedbackList = document.getElementById('feedbackList');
+            
+            if (data.submissions.length === 0) {
+                document.getElementById('message').textContent = 'No submissions found matching the filters.';
+                document.getElementById('message').className = 'message error';
+                document.getElementById('message').style.display = 'block';
+                document.getElementById('summaryArea').style.display = 'none';
+                return;
+            }
+            
+            document.getElementById('summaryArea').style.display = 'block';
+
+            // --- 1. Display Summary Statistics ---
+            let summaryHTML = '';
+            for(let i = 0; i < RATING_QUESTIONS.length; i++) {
+                const qKey = `avg_q${i + 1}`;
+                const avgValue = data.average_ratings[qKey] ? parseFloat(data.average_ratings[qKey]).toFixed(2) : 'N/A';
+                summaryHTML += `<li><strong>${RATING_QUESTIONS[i]}:</strong> <span class="rating-average">${avgValue}</span> / 5</li>`;
+            }
+            summaryDisplay.innerHTML = summaryHTML;
+            document.getElementById('submission_count').textContent = data.submissions.length;
+            
+            // --- 2. Display Detailed Submissions ---
+            feedbackList.innerHTML = '';
+            
+            data.submissions.forEach((sub, index) => {
+                let itemHTML = `
+                    <div class="feedback-item">
+                        <strong>Target:</strong> ${sub.target_name} 
+                        (${sub.department || 'N/A'} - Submitted by: ${sub.full_name})<br>
+                        <small>Submitted on: ${sub.submission_date}</small>
+                        <hr style="border: none; border-top: 1px dashed #eee;">
+                        <strong>Ratings:</strong> 
+                        <ul>
+                            <li>Q1 (${RATING_QUESTIONS[0]}): ${sub.rating_q1} / 5</li>
+                            <li>Q2 (${RATING_QUESTIONS[1]}): ${sub.rating_q2} / 5</li>
+                            <li>Q3 (${RATING_QUESTIONS[2]}): ${sub.rating_q3} / 5</li>
+                        </ul>
+                `;
+                if (sub.overall_comment) {
+                    itemHTML += `<div class="comment-section"><strong>Comment:</strong> ${sub.overall_comment}</div>`;
+                }
+                itemHTML += `</div>`;
+                feedbackList.innerHTML += itemHTML;
+            });
+        }
+    </script>
+</body>
+</html>

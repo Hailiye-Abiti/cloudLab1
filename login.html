@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wachemo University - Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+      background:#333;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .logo-container img {
+            width: 80px;
+            margin-bottom: 10px;
+        }
+
+        h2 { color: #003366; margin-bottom: 5px; font-size: 24px; }
+        p.subtitle { color: #666; margin-bottom: 30px; font-size: 14px; }
+
+        .form-group { position: relative; margin-bottom: 20px; text-align: left; }
+
+        .form-group i {
+            position: absolute;
+            left: 15px;
+            top: 40px;
+            color: #003366;
+        }
+
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px; }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px 15px 12px 40px; /* Space for icon */
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus { border-color: #003366; box-shadow: 0 0 8px rgba(0,51,102,0.1); }
+
+        .btn-primary {
+            background: #003366;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+        .btn-primary:hover { background: #00509e; transform: translateY(-2px); }
+
+        .links { margin-top: 20px; font-size: 13px; color: #666; }
+        .links a { color: #003366; text-decoration: none; font-weight: 600; }
+        .links a:hover { text-decoration: underline; }
+
+        .message { margin-top: 15px; font-size: 14px; padding: 10px; border-radius: 5px; display: none; }
+        .success { display: block; background: #d4edda; color: #155724; }
+        .error { display: block; background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="logo-container">
+            <img  style="width: 40%;" src="logo5.jpg" alt="WCU Logo" onerror="this.src='https://via.placeholder.com/80?text=WCU'">
+        </div>
+        <h2>Welcome Back</h2>
+        <p class="subtitle">Feedback Management System</p>
+
+        <form id="loginForm">
+            <input type="hidden" name="action" value="login">
+            
+            <div class="form-group">
+                <label>Student ID / Email</label>
+                <i class="fas fa-user"></i>
+                <input type="text" name="username" placeholder="Enter your ID or Email" required>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" placeholder="Enter password" required>
+            </div>
+
+            <button type="submit" class="btn-primary">LOGIN</button>
+
+            <div class="links">
+                <a href="forgot_password.html">Forgot Password?</a><br><br>
+                Don't have an account? <a href="register.html">Register here</a>
+            </div>
+            
+            <p id="message" class="message"></p>
+        </form>
+    </div>
+
+    <script>
+        
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const messageElement = document.getElementById('message');
+            
+            messageElement.textContent = 'Authenticating...';
+            messageElement.className = 'message';
+            messageElement.style.display = 'block';
+
+            fetch('auth_handler.php', { method: 'POST', body: formData })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    messageElement.textContent = data.message;
+                    messageElement.className = 'message success';
+                    if (data.full_name) sessionStorage.setItem('full_name', data.full_name);
+                    if (data.redirect) setTimeout(() => window.location.href = data.redirect, 1000);
+                } else {
+                    messageElement.textContent = data.message || 'Login failed.';
+                    messageElement.className = 'message error';
+                }
+            })
+            .catch(error => {
+                messageElement.textContent = 'Error connecting to server.';
+                messageElement.className = 'message error';
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wachemo University - Student Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+
+        body {
+            background-color: #f0f2f5;
+            min-height: 100vh;
+        }
+
+        /* Top Navigation Bar */
+        .navbar {
+            background: #003366;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar .logo-section { display: flex; align-items: center; gap: 10px; }
+        .navbar img { width: 40px; height: 40px; border-radius: 50%; background: white; }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .welcome-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            border-left: 6px solid #ff9800;
+        }
+
+        .welcome-card h2 { color: #003366; font-size: 28px; }
+        .welcome-card p { color: #666; margin-top: 5px; }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .menu-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #eee;
+        }
+
+        .menu-card i {
+            font-size: 40px;
+            color: #003366;
+            margin-bottom: 15px;
+        }
+
+        .menu-card span {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .menu-card p {
+            font-size: 13px;
+            color: #888;
+            margin-top: 8px;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 20px rgba(0,51,102,0.1);
+            border-color: #003366;
+            background-color: red;
+        }
+
+        .logout-card { border-top: 3px solid #dc3545; }
+        .logout-card i { color: #dc3545; }
+
+        /* Message Area */
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+        }
+        .error { display: block; background: #f8d7da; color: #721c24; }
+
+        @media (max-width: 600px) {
+            .welcome-card h2 { font-size: 22px; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo-section">
+            <img src="logo5.jpg" alt="Logo" onerror="this.src='https://via.placeholder.com/40'">
+            <span style="font-weight: bold; letter-spacing: 1px;">WCU FEEDBACK</span>
+        </div>
+        <div class="user-info">
+            <i class="fas fa-graduation-cap"></i> Student Portal
+        </div>
+    </nav>
+
+    <div class="container">
+        <p id="message" class="message"></p>
+
+        <div class="welcome-card">
+            <h2 id="welcome-message">Welcome, Student!</h2>
+            <p>What would you like to do today? Your feedback helps us improve.</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <a href="feedback_categories.html" class="menu-card">
+                <i class="fas fa-edit"></i>
+                <span>Submit Feedback</span>
+                <p>Provide feedback for staff or courses</p>
+            </a>
+
+            <a href="view_history.html" class="menu-card">
+                <i class="fas fa-history"></i>
+                <span>My History</span>
+                <p>View your previous submissions</p>
+            </a>
+
+            <a href="update_profile.html" class="menu-card">
+                <i class="fas fa-user-circle"></i>
+                <span>Update Profile</span>
+                <p>Manage your personal information</p>
+            </a>
+
+            <a href="change_password.html" class="menu-card">
+                <i class="fas fa-key"></i>
+                <span>Change Password</span>
+                <p>Update your account security</p>
+            </a>
+
+            <a href="#" id="logout_link" class="menu-card logout-card">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+                <p>Safely exit the system</p>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ስም ከ session storage ማምጣት
+            const username = sessionStorage.getItem('full_name') || 'Student'; 
+            document.getElementById('welcome-message').textContent = `Welcome, ${username}!`;
+            
+            // Unauthorized access check
+            if (window.location.search.includes('unauthorized')) {
+                const msg = document.getElementById('message');
+                msg.textContent = 'Session expired. Please log in again.';
+                msg.className = 'message error';
+                setTimeout(() => window.location.href = 'login.html', 3000);
+            }
+        });
+
+        // Logout logic (ሳይቀየር የቀጠለ)
+        document.getElementById('logout_link').addEventListener('click', function(e) {
+            e.preventDefault();
+            if(confirm("Are you sure you want to logout?")) {
+                fetch('auth_handler.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'action=logout'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    sessionStorage.clear();
+                    window.location.href = 'login.html';
+                })
+                .catch(error => {
+                    window.location.href = 'login.html';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
